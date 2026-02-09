@@ -1,0 +1,17 @@
+{
+  "name": "student-placement-assistant",
+  "version": "1.0.0",
+  "description": "MERN stack app to help students prepare for job placements using AI",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && node server.js",
+    "render-build": "cd server && npm install && cd ../client && npm install && npm run build"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

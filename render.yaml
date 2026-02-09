@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: student-placement-assistant
+    runtime: node
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a secure random value
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Set manually in Render dashboard
