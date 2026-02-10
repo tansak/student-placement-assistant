@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getMe, login as loginApi, signup as signupApi } from '../services/api';
+import { getMe, login as loginApi, signup as signupApi, googleAuth as googleAuthApi } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -33,6 +33,13 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
+  const googleLogin = async (credential) => {
+    const res = await googleAuthApi(credential);
+    localStorage.setItem('token', res.data.token);
+    setUser(res.data.user);
+    return res.data;
+  };
+
   const refreshUser = async () => {
     const res = await getMe();
     setUser(res.data.user);
@@ -44,7 +51,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, googleLogin, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

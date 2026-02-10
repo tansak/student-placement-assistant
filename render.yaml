@@ -14,3 +14,5 @@ services:
         generateValue: true  # Render auto-generates a secure random value
       - key: ANTHROPIC_API_KEY
         sync: false  # Set manually in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set manually in Render dashboard

@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
+import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = Router();
 
@@ -64,7 +67,7 @@ router.post(
       const { email, password } = req.body;
 
       const user = await User.findOne({ email }).select('+password');
-      if (!user) {
+      if (!user || !user.password) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
@@ -84,6 +87,48 @@ router.post(
     }
   }
 );
+
+// POST /api/auth/google
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ message: 'Google credential is required' });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ message: 'Google email not verified' });
+    }
+
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      user = await User.create({ name, email, googleId });
+    }
+
+    const token = generateToken(user._id);
+
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
+  } catch (error) {
+    console.error('Google auth error:', error.message);
+    res.status(401).json({ message: 'Invalid Google credential' });
+  }
+});
 
 // PUT /api/auth/profile
 router.put('/profile', auth, async (req, res) => {
